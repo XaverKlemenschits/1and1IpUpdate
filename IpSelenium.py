@@ -80,7 +80,10 @@ def changeIp(newIp):
 
 def appendLog(filename, string, maxlines=20):
     ''' Appends one line to log and keeps lines in file to maxlines'''
-    lines = open(filename, 'r').readlines()
+    try:
+        lines = open(filename, 'r').readlines()
+    except:
+        lines = []    
     lines.append(string)
     logFile = open(filename, 'w')
     for line in lines[-maxlines:]:
@@ -95,9 +98,13 @@ display.start()
 #check for Ip
 ipFile = 'WanIp.txt'
 logFile = 'log.txt'
-fstream = open(ipFile, 'r')
-currentIp = fstream.read().strip()
-fstream.close()
+try:
+    fstream = open(ipFile, 'r')
+    currentIp = fstream.read().strip()
+    fstream.close()
+except:
+    currentIp = "";
+
 #print(currentIp)
 
 newIp = ipgetter.myip().strip()
