@@ -35,6 +35,7 @@ def changeIp(newIp):
     browser.get(url)
     
     #Fill in user name
+    time.sleep(5)
     UserName = browser.find_element_by_name(formLogin)
     UserName.send_keys(User)
     vstream.write(time.strftime("%d/%m/%Y-%H:%M") + "\nFilled in Username\n")
@@ -47,12 +48,6 @@ def changeIp(newIp):
     #Submit login
     browser.find_element_by_id(formSubmit).click()
     vstream.write("Submitted password\n")
-
-
-    #got to DNS page after waiting for server to process login    
-    #time.sleep(5)
-    #browser.get(domainUrl)
-    #vstream.write("Entered Domain Page\n")
 
     #navigate to DNS page
     time.sleep(5)
