@@ -86,10 +86,6 @@ def appendLog(filename, string, maxlines=20):
     logFile.close()
     
 
-#start display
-display = Display(visible=0, size=(800, 600))
-display.start()
-
 #check for Ip
 ipFile = 'WanIp.txt'
 logFile = 'log.txt'
@@ -100,27 +96,20 @@ try:
 except:
     currentIp = "";
 
-#print(currentIp)
 
 newIp = ipgetter.myip().strip()
-#print(newIp)
 
 appendLog(logFile, time.strftime("%d/%m/%Y-%H:%M") + ": Checked IP(" + currentIp + ")\n")
 
-#print(currentIp)
-#print(newIp)
-
 if(currentIp != newIp):
-    #startxvfb
-    #os.system('Xvfb :99')
-    #os.system('export DISPLAY=:99')
 
     #write log
-    #logFile = open('log.txt', 'a')
     appendLog(logFile, time.strftime("%d/%m/%Y-%H:%M") + '  changing Ip to ' + newIp + '\n')
-    #print("Wrote log")
     #change ip at 1und1.de
-    changeIp(newIp)
+
+    #start display and change ip
+    with Display(visible=0, size=(800,600)) as display:
+        changeIp(newIp)
     
     appendLog(logFile, time.strftime("%d/%m/%Y-%H:%M") + '  changed Ip to ' + newIp + '\n')
     
@@ -128,6 +117,7 @@ if(currentIp != newIp):
     fstream = open(ipFile, 'w')
     fstream.write(newIp)
     fstream.close()
+
 #else:
 #    print('No changes')
 
