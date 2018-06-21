@@ -16,8 +16,8 @@ def changeIp(newIp):
     formLogin = 'oaologin.username'
     formPassw = 'oaologin.password'
     formSubmit = 'ct-btn-submitbutton-lead'
+    ipInput = 'recordValue'
 
-    IpForm = 'is-ipv4'
 
     # get user information
     lines = open('user.txt', 'r').readlines()
@@ -25,15 +25,16 @@ def changeIp(newIp):
     Pass = lines[1]
 
     # URL of domain settings page of german 1&1, might be slightly different for others
-    domainUrl = "https://mein.1und1.de/domain-dns-settings/" + User + "?__lf=HomeFlow&linkId=ct.txt.domainlist.advancedsettings.pro&from=domain-details%2F" + User
+    dnsUrl = "https://mein.1und1.de/edit-dns-record/" + User + "/872624373?__lf=HomeFlow&linkId=ct.link.dns.editrecord"
 
-
+    # where to save detailed log
     vlog = 'verblog.txt'
     vstream = open(vlog, 'w')
 
+    # set up browser and load login page
     browser = webdriver.Firefox()
     browser.get(url)
-    
+
     #Fill in user name
     time.sleep(5)
     UserName = browser.find_element_by_name(formLogin)
@@ -44,29 +45,26 @@ def changeIp(newIp):
     Password = browser.find_element_by_name(formPassw)
     Password.send_keys(Pass)
     vstream.write("Filled in password\n")
-    
+
     #Submit login
     browser.find_element_by_id(formSubmit).click()
     vstream.write("Submitted password\n")
 
     #navigate to DNS page
     time.sleep(5)
-    browser.get(domainUrl)
+    browser.get(dnsUrl)
     vstream.write("Entered Domain Page\n")
 
     #put in the new ip
     time.sleep(10)
-    ipv4Input = browser.find_element_by_name('ipv4')
+    ipv4Input = browser.find_element_by_id(ipInput)
     ipv4Input.clear()
     ipv4Input.send_keys(newIp)
     vstream.write("Filled in new IP\n")
 
     #save changes
     browser.find_element_by_xpath(".//button[contains(.,'Speichern')]").click()
-    time.sleep(2)
-    browser.find_element_by_xpath(".//button[contains(.,'Ja')]").click()
-    vstream.write("Clicked save\n")
-    
+
     #wait for server response and quit
     time.sleep(5)
     browser.quit()
@@ -78,13 +76,13 @@ def appendLog(filename, string, maxlines=20):
     try:
         lines = open(filename, 'r').readlines()
     except:
-        lines = []    
+        lines = []
     lines.append(string)
     logFile = open(filename, 'w')
     for line in lines[-maxlines:]:
         logFile.write(line)
     logFile.close()
-    
+
 
 #check for Ip
 ipFile = 'WanIp.txt'
@@ -110,9 +108,9 @@ if(currentIp != newIp):
     #start display and change ip
     with Display(visible=0, size=(800,600)) as display:
         changeIp(newIp)
-    
+
     appendLog(logFile, time.strftime("%d/%m/%Y-%H:%M") + '  changed Ip to ' + newIp + '\n')
-    
+
     #change saved ip
     fstream = open(ipFile, 'w')
     fstream.write(newIp)
@@ -120,4 +118,3 @@ if(currentIp != newIp):
 
 #else:
 #    print('No changes')
-
