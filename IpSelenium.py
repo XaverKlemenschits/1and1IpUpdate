@@ -2,8 +2,7 @@
 '''
 Script to automatically update Ip if it changes.
 '''
-import time, sys, os
-import ipgetter
+import time, shlex, subprocess
 from selenium import webdriver
 from pyvirtualdisplay import Display
 
@@ -71,6 +70,7 @@ def changeIp(newIp):
     vstream.write("Quit browser\n")
     vstream.close()
 
+
 def appendLog(filename, string, maxlines=20):
     ''' Appends one line to log and keeps lines in file to maxlines'''
     try:
@@ -87,6 +87,8 @@ def appendLog(filename, string, maxlines=20):
 #check for Ip
 ipFile = 'WanIp.txt'
 logFile = 'log.txt'
+mailFile = 'mail_user.txt'
+
 try:
     fstream = open(ipFile, 'r')
     currentIp = fstream.read().strip()
@@ -94,8 +96,11 @@ try:
 except:
     currentIp = "";
 
-
-newIp = ipgetter.myip().strip()
+# find new ip by resolving dns
+cmd='dig @resolver2.opendns.com myip.opendns.com -4 +short'
+proc=subprocess.Popen(shlex.split(cmd),stdout=subprocess.PIPE)
+out,err=proc.communicate()
+newIp = out.decode("utf-8").strip()
 
 appendLog(logFile, time.strftime("%d/%m/%Y-%H:%M") + ": Checked IP(" + currentIp + ")\n")
 
@@ -116,5 +121,22 @@ if(currentIp != newIp):
     fstream.write(newIp)
     fstream.close()
 
-#else:
-#    print('No changes')
+
+    #send email confirming that ip was changed
+    from smtplib import SMTP_SSL as SMTP
+
+    lines = [i.strip() for i in open(mailFile, 'r').readlines()]
+    sender = lines[0]
+    receivers = [lines[0]]
+
+    message = """From: """ + lines[2] + """ <""" + lines[3] + """>
+To: """ + lines[4] + """ <""" + lines[5] + """>
+Subject: IP change detected
+
+The old ip """ + currentIp + """ was changed to """ + newIp + """."""
+
+    smtpObj = SMTP('smtp.1und1.de', 465)
+    smtpObj.set_debuglevel(0)
+    smtpObj.login(sender, lines[1])
+    smtpObj.sendmail(sender, receivers, message)
+    smtpObj.quit()
